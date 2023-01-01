@@ -1,3 +1,4 @@
+# DO NOT USE FOR PRODUCTION
 version: "3.8"
 services:
   api:
@@ -5,7 +6,7 @@ services:
     build: .
     tty: true
     ports:
-      - "3000:3000"
+      - 3000:3000
     volumes:
       - type: bind
         source: ./
@@ -18,3 +19,15 @@ services:
       - db
   db:
     image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27017:27017
+    volumes:
+      - ./configdb:/data/configdb
+      - mongoDataStore:/data/db
+
+volumes:
+  mongoDataStore:
+    driver: local
