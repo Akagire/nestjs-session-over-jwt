@@ -38,6 +38,13 @@ export class AuthService {
     };
   }
 
+  async logout(username: string) {
+    const sessions = await this.getExistSessions(username);
+    await this.deleteSessions(sessions);
+
+    return 'success logout';
+  }
+
   async createSession(email: string) {
     const sessionId = crypto.randomUUID();
 
