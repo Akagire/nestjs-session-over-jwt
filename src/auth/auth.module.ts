@@ -1,3 +1,5 @@
+import { Session, SessionSchema } from './../schemas/session.schema';
+import { MongooseModule } from '@nestjs/mongoose';
 import { jwtConstraints } from './constraints';
 import { UsersModule } from './../users/users.module';
 import { Module } from '@nestjs/common';
@@ -14,6 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
       secret: jwtConstraints.secret,
       signOptions: { expiresIn: '3600s' },
     }),
+    MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
   ],
   providers: [AuthService, LocalStrategy],
   exports: [AuthService],

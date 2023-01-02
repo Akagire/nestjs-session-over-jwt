@@ -8,6 +8,13 @@ export class Session {
 
   @Prop()
   email: string;
+
+  @Prop({
+    type: Date,
+    default: new Date(),
+    expires: 3600,
+  })
+  createdTimestamp: Date;
 }
 
 export type SessionDocument = HydratedDocument<Session>;
