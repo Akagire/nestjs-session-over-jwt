@@ -1,73 +1,85 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Session over JWT by NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repositories implementation was inspired this idea.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+https://zenn.dev/ritou/articles/4a5d6597a5f250
 
-## Description
+JWT is inappropriate for manage session because of JWT is just a authentication interface format.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+But JWT can set issuer, expire limit, and any other information for payload. So client can to read without API call for these information. And also JWT can detect token alteration.
 
-## Installation
+So I tried JWT include session ID. I call it "Session over JWT".
 
-```bash
-$ yarn install
+For more details, please read this gist.
+
+https://gist.github.com/Akagire/ddb0eec6157d1a4ae4717ad1c2779ecd
+
+### System Architecture
+
+Orchestration: Docker compose
+Application: NestJS
+Session Store: MongoDB
+
+### How to wake up
+
+Just do following command in current directory.
+
+```sh
+docker compose up --build
 ```
 
-## Running the app
+### How to try it
 
-```bash
-# development
-$ yarn run start
+#### Login
 
-# watch mode
-$ yarn run start:dev
+```sh
+curl -X POST http://localhost:3000/login \
+  -d '{"username":"root","password":"password"}' \
+  -H 'Content-type: application/json'
 
-# production mode
-$ yarn run start:prod
+# => {"access_token":"eyJ..."}
 ```
 
-## Test
+#### Call authentication required API
 
-```bash
-# unit tests
-$ yarn run test
+```sh
+#without authentication
+curl -X GET http://localhost:3000/member \
+  -H 'Content-type: application/json' \
+# => {"statusCode":401,"message":"Unauthorized"}
 
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+curl -X GET http://localhost:3000/member \
+  -H 'Content-type: application/json' \
+  -H 'Authorization: Bearer eyJ...'
+# => Hello World!
 ```
 
-## Support
+### Logout
+```sh
+curl -X POST http://localhost:3000/logout \
+  -H 'Content-type: application/json' \
+  -H 'Authorization: Bearer eyJ...'
+# => success logout
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Force Logout
 
-## Stay in touch
+```sh
+# create access token
+curl -X POST http://localhost:3000/login \
+  -d '{"username":"root","password":"password"}' \
+  -H 'Content-type: application/json'
+# => {"access_token":"eyJ..."}
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# force logout
+mongosh mongodb://localhost:27017/local
+local > db.sessions.deleteMany({})
+# => { acknowledged: true, deletedCount: XXX }
+local > .exit
 
-## License
-
-Nest is [MIT licensed](LICENSE).
+# check logged out
+curl -X GET http://localhost:3000/member \
+  -H 'Content-type: application/json' \
+  -H 'Authorization: Bearer eyJ...'
+# => {"statusCode":401,"message":"Unauthorized"}
+```
