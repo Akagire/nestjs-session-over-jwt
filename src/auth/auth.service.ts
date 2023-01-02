@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { Session } from './../schemas/session.schema';
+import { Session, SessionDocument } from './../schemas/session.schema';
 import { UsersService } from './../users/users.service';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -25,7 +25,12 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const sessionId = await this.createSession(user.email);
+    const sessions = await this.getExistSessions(user.username);
+    if (sessions.length > 0) {
+      await this.deleteSessions(sessions);
+    }
+
+    const sessionId = await this.createSession(user.username);
     const payload = { session_id: sessionId, sub: user.userId };
 
     return {
@@ -43,5 +48,17 @@ export class AuthService {
     const result = await session.save();
 
     return result.sessionId;
+  }
+
+  getExistSessions(email: string) {
+    return this.sessionModel.find({ email });
+  }
+
+  deleteSessions(sessions: SessionDocument[]) {
+    Promise.all(
+      sessions.map(async (session) => {
+        await session.remove();
+      }),
+    );
   }
 }
