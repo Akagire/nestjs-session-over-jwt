@@ -6,11 +6,13 @@ https://zenn.dev/ritou/articles/4a5d6597a5f250
 
 JWT is inappropriate for manage session because of JWT is just a authentication interface format.
 
-But JWT can set issuer, expire limit, and any other information for payload. So client can to read without API call for these information. And also JWT can detect token alteration.
+But JWT can set issuer, expire limit, and any other information for payload. So client can refer these data without API call. And also JWT can detect token alteration.
 
-So I tried JWT include session ID. I call it "Session over JWT".
+So, including session ID for JWT format access token, it may has possibility for strong security authentication.
 
-For more details, please read this gist.
+I tried this idea. I call this architecture **Session over JWT**.
+
+For more details, please refer this notebook.
 
 https://gist.github.com/Akagire/ddb0eec6157d1a4ae4717ad1c2779ecd
 
