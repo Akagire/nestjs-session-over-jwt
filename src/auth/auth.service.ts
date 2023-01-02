@@ -50,6 +50,10 @@ export class AuthService {
     return result.sessionId;
   }
 
+  getSessionBySessionId(sessionId: string) {
+    return this.sessionModel.findOne({ sessionId });
+  }
+
   getExistSessions(email: string) {
     return this.sessionModel.find({ email });
   }
