@@ -1,6 +1,6 @@
 # Session over JWT by NestJS
 
-This repositories implementation was inspired this idea.
+This repositories implementation was inspired by  this idea.
 
 https://zenn.dev/ritou/articles/4a5d6597a5f250
 
